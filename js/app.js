@@ -32,6 +32,24 @@ const btnDados =
 let filtroAtual = 'todos'
 
 /* =========================
+   MODAL DETALHES
+========================= */
+
+const detalhesModal =
+  document.getElementById('detalhes-modal')
+
+const detalhesContent =
+  document.getElementById('detalhes-content')
+
+const closeDetalhes =
+  document.getElementById('close-detalhes')
+
+closeDetalhes.addEventListener('click', () => {
+
+  detalhesModal.classList.add('hidden')
+})
+
+/* =========================
    MODAL
 ========================= */
 
@@ -236,9 +254,175 @@ async function carregarAtendimentos() {
     container.appendChild(card)
   })
 
-  adicionarEventosResolver()
+  adicionarEventosResolver(data)
 
   atualizarKPIs(data)
+}
+
+/* =========================
+   DETALHES
+========================= */
+
+function adicionarEventosDetalhes(data) {
+
+  const botoes =
+    document.querySelectorAll('.detalhes-btn')
+
+  botoes.forEach(botao => {
+
+    botao.addEventListener('click', () => {
+
+      const id = botao.dataset.id
+
+      const atendimento =
+        data.find(item => item.id === id)
+
+      if (!atendimento) return
+
+      detalhesContent.innerHTML = `
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+          <div>
+
+            <h3 class="text-sm text-slate-500 mb-1">
+              Nome do aluno
+            </h3>
+
+            <p class="font-semibold text-lg">
+              ${atendimento.nome_aluno}
+            </p>
+
+          </div>
+
+          <div>
+
+            <h3 class="text-sm text-slate-500 mb-1">
+              RA
+            </h3>
+
+            <p class="font-semibold">
+              ${atendimento.ra || '-'}
+            </p>
+
+          </div>
+
+          <div>
+
+            <h3 class="text-sm text-slate-500 mb-1">
+              CPF
+            </h3>
+
+            <p class="font-semibold">
+              ${atendimento.cpf || '-'}
+            </p>
+
+          </div>
+
+          <div>
+
+            <h3 class="text-sm text-slate-500 mb-1">
+              Curso
+            </h3>
+
+            <p class="font-semibold">
+              ${atendimento.curso}
+            </p>
+
+          </div>
+
+          <div>
+
+            <h3 class="text-sm text-slate-500 mb-1">
+              Responsável
+            </h3>
+
+            <p class="font-semibold">
+              ${atendimento.responsavel}
+            </p>
+
+          </div>
+
+          <div>
+
+            <h3 class="text-sm text-slate-500 mb-1">
+              Prioridade
+            </h3>
+
+            <p class="font-semibold">
+              ${atendimento.prioridade}
+            </p>
+
+          </div>
+
+          <div>
+
+            <h3 class="text-sm text-slate-500 mb-1">
+              Status
+            </h3>
+
+            <p class="font-semibold">
+              ${atendimento.status}
+            </p>
+
+          </div>
+
+          <div>
+
+            <h3 class="text-sm text-slate-500 mb-1">
+              Categoria
+            </h3>
+
+            <p class="font-semibold">
+              ${atendimento.tipo_problema}
+            </p>
+
+          </div>
+
+        </div>
+
+        <div class="mt-8">
+
+          <h3 class="text-sm text-slate-500 mb-2">
+            Descrição / Pendência
+          </h3>
+
+          <div class="bg-slate-100 rounded-2xl p-5">
+            ${atendimento.descricao_pendencia || '-'}
+          </div>
+
+        </div>
+
+        ${
+          atendimento.descricao_resolucao
+            ? `
+              <div class="mt-6">
+
+                <h3 class="text-sm text-slate-500 mb-2">
+                  Resolução
+                </h3>
+
+                <div class="bg-green-50 rounded-2xl p-5">
+                  ${atendimento.descricao_resolucao}
+                </div>
+
+              </div>
+            `
+            : ''
+        }
+
+        <div class="mt-6 text-sm text-slate-500">
+
+          Criado em:
+          ${formatarData(atendimento.created_at)}
+
+        </div>
+
+      `
+
+      detalhesModal.classList.remove('hidden')
+    })
+  })
 }
 
 /* =========================
