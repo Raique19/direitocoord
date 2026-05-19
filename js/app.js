@@ -6,6 +6,7 @@ import { supabase } from './supabase.js'
 
 let paginaAtual = 1
 const itensPorPagina = 10
+let totalRegistros = 0
 
 /* =========================
    ELEMENTOS
@@ -97,7 +98,7 @@ closeModal.addEventListener('click', () => {
 })
 
 /* =========================
-   FORMATAR DATA
+   HELPERS
 ========================= */
 
 function formatarData(dataISO) {
@@ -113,21 +114,6 @@ function formatarData(dataISO) {
     })
   )
 }
-
-/* =========================
-   MÁSCARA CPF
-========================= */
-
-function mascararCPF(cpf) {
-
-  if (!cpf) return '-'
-
-  return `***.${cpf.slice(3, 6)}.***`
-}
-
-/* =========================
-   PRIORIDADE
-========================= */
 
 function prioridadeClass(prioridade) {
 
@@ -158,8 +144,72 @@ buscaInput.addEventListener('input', (e) => {
 
   termoBusca = e.target.value
 
+  paginaAtual = 1
+
   carregarAtendimentos()
 })
+
+/* =========================
+   TIMELINE
+========================= */
+
+async function criarEventoTimeline(
+  atendimentoId,
+  evento
+) {
+
+  await supabase
+    .from('timeline_atendimentos')
+    .insert([
+      {
+        atendimento_id: atendimentoId,
+        evento,
+        usuario: 'Coordenação'
+      }
+    ])
+}
+
+/* =========================
+   COMENTÁRIOS
+========================= */
+
+async function carregarComentarios(id) {
+
+  const comentariosContainer =
+    document.getElementById(
+      'comentarios-container'
+    )
+
+  const { data } = await supabase
+    .from('comentarios_atendimento')
+    .select('*')
+    .eq('atendimento_id', id)
+    .order('criado_em', {
+      ascending: false
+    })
+
+  comentariosContainer.innerHTML = ''
+
+  data.forEach(comentario => {
+
+    comentariosContainer.innerHTML += `
+
+      <div class="bg-slate-100 rounded-2xl p-4">
+
+        <p>
+          ${comentario.comentario}
+        </p>
+
+        <p class="text-sm text-slate-500 mt-2">
+          ${comentario.usuario}
+          •
+          ${formatarData(comentario.criado_em)}
+        </p>
+
+      </div>
+    `
+  })
+}
 
 /* =========================
    CARREGAR ATENDIMENTOS
@@ -174,8 +224,6 @@ async function carregarAtendimentos() {
       ascending: false
     })
 
-  /* FILTROS */
-
   if (filtroAtual === 'pendentes') {
 
     query = query.eq('status', 'Pendente')
@@ -186,8 +234,6 @@ async function carregarAtendimentos() {
     query = query.eq('status', 'Resolvido')
   }
 
-  /* BUSCA */
-
   if (termoBusca.trim() !== '') {
 
     query = query.or(`
@@ -197,11 +243,19 @@ async function carregarAtendimentos() {
     `)
   }
 
- const inicio = (paginaAtual - 1) * itensPorPagina
-const fim = inicio + itensPorPagina - 1
+  const inicio =
+    (paginaAtual - 1) * itensPorPagina
 
-const { data, error, count } = await query
-  .range(inicio, fim)
+  const fim =
+    inicio + itensPorPagina - 1
+
+  const {
+    data,
+    error,
+    count
+  } = await query.range(inicio, fim)
+
+  totalRegistros = count
 
   if (error) {
 
@@ -212,30 +266,18 @@ const { data, error, count } = await query
 
   container.innerHTML = ''
 
-  /* SEM RESULTADOS */
-
   if (data.length === 0) {
 
     container.innerHTML = `
       <div class="bg-white rounded-3xl p-10 text-center">
-
         <h3 class="text-2xl font-bold mb-2">
           Nenhum atendimento encontrado
         </h3>
-
-        <p class="text-slate-500">
-          Não existem registros nesta categoria.
-        </p>
-
       </div>
     `
 
-    atualizarKPIs(data)
-
     return
   }
-
-  /* CARDS */
 
   data.forEach(atendimento => {
 
@@ -245,77 +287,70 @@ const { data, error, count } = await query
         : 'status-pendente'
 
     const prioridadeCSS =
-      prioridadeClass(atendimento.prioridade)
+      prioridadeClass(
+        atendimento.prioridade
+      )
 
-    const card = document.createElement('div')
+    const card =
+      document.createElement('div')
 
     card.className = 'atendimento-card'
 
-   card.innerHTML = `
+    card.innerHTML = `
 
-  <div class="flex justify-between items-center">
+      <div class="flex justify-between items-center">
 
-    <div>
+        <div>
 
-      <h3 class="mb-1">
-        ${atendimento.nome_aluno}
-      </h3>
+          <h3 class="mb-1">
+            ${atendimento.nome_aluno}
+          </h3>
 
-      <p class="text-sm">
-        ${atendimento.curso}
-        •
-        ${atendimento.tipo_problema}
-      </p>
+          <p class="text-sm">
+            ${atendimento.curso}
+            •
+            ${atendimento.tipo_problema}
+          </p>
 
-      <p class="text-sm text-slate-400 mt-1">
-        ${atendimento.responsavel}
-        •
-        ${formatarData(atendimento.created_at)}
-      </p>
+          <p class="${prioridadeCSS}">
+            ${atendimento.prioridade}
+          </p>
 
-    </div>
+        </div>
 
-    <div class="flex flex-col items-end gap-4">
+        <div class="flex gap-2">
 
-      <span class="${statusClass}">
-        ${atendimento.status}
-      </span>
+          <button
+            class="btn-primary detalhes-btn"
+            data-id="${atendimento.id}"
+          >
+            Detalhes
+          </button>
 
-      <div class="flex gap-2">
+          ${
+            atendimento.status === 'Pendente'
+              ? `
+                <button
+                  class="btn-success resolver-btn"
+                  data-id="${atendimento.id}"
+                >
+                  Resolver
+                </button>
+              `
+              : ''
+          }
 
-        <button
-          class="btn-primary detalhes-btn"
-          data-id="${atendimento.id}"
-        >
-          Detalhes
-        </button>
+          <button
+            class="btn-delete excluir-btn"
+            data-id="${atendimento.id}"
+          >
+            Excluir
+          </button>
 
-        ${
-          atendimento.status === 'Pendente'
-            ? `
-              <button
-                class="btn-success resolver-btn"
-                data-id="${atendimento.id}"
-              >
-                Resolver
-              </button>
-            `
-            : ''
-        }
-
-        <button
-  class="btn-delete excluir-btn"
-  data-id="${atendimento.id}"
->
-  Excluir
-</button>
+        </div>
 
       </div>
-
-    </div>
-
-  </div>
-`
+    `
 
     container.appendChild(card)
   })
@@ -324,22 +359,24 @@ const { data, error, count } = await query
 
   adicionarEventosResolver()
 
-   adicionarEventosExcluir()
+  adicionarEventosExcluir()
 
   atualizarKPIs(data)
+
+  const totalPaginas =
+    Math.ceil(
+      totalRegistros / itensPorPagina
+    )
+
+  paginaInfo.textContent =
+    `Página ${paginaAtual} de ${totalPaginas}`
+
+  btnAnterior.disabled =
+    paginaAtual === 1
+
+  btnProxima.disabled =
+    paginaAtual === totalPaginas
 }
-
-const totalPaginas =
-  Math.ceil(count / itensPorPagina)
-
-paginaInfo.textContent =
-  `Página ${paginaAtual} de ${totalPaginas}`
-
-btnAnterior.disabled =
-  paginaAtual === 1
-
-btnProxima.disabled =
-  paginaAtual === totalPaginas
 
 /* =========================
    DETALHES
@@ -352,141 +389,152 @@ function adicionarEventosDetalhes(data) {
 
   botoes.forEach(botao => {
 
-    botao.addEventListener('click', () => {
+    botao.addEventListener(
+      'click',
+      async () => {
 
-      const id = botao.dataset.id
+        const id = botao.dataset.id
 
-      const atendimento =
-        data.find(item => item.id === id)
+        const atendimento =
+          data.find(
+            item => item.id === id
+          )
 
-      if (!atendimento) return
+        const { data: timeline } =
+          await supabase
+            .from(
+              'timeline_atendimentos'
+            )
+            .select('*')
+            .eq(
+              'atendimento_id',
+              id
+            )
+            .order('criado_em', {
+              ascending: false
+            })
 
-      detalhesContent.innerHTML = `
+        const timelineHTML =
+          timeline.map(item => `
 
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="border-l-2 border-slate-300 pl-4 py-2">
 
-          <div>
-            <h3 class="text-sm text-slate-500 mb-1">
-              Nome do aluno
-            </h3>
+              <p class="font-semibold">
+                ${item.evento}
+              </p>
 
-            <p class="font-semibold text-lg">
-              ${atendimento.nome_aluno}
-            </p>
+              <p class="text-sm text-slate-500">
+                ${item.usuario}
+                •
+                ${formatarData(
+                  item.criado_em
+                )}
+              </p>
+
+            </div>
+
+          `).join('')
+
+        detalhesContent.innerHTML = `
+
+          <div class="space-y-6">
+
+            <div>
+              <h2 class="text-2xl font-bold">
+                ${atendimento.nome_aluno}
+              </h2>
+            </div>
+
+            <div class="bg-slate-100 rounded-2xl p-5">
+              ${atendimento.descricao_pendencia}
+            </div>
+
+            <div>
+
+              <h3 class="font-bold mb-4">
+                Timeline
+              </h3>
+
+              ${timelineHTML}
+
+            </div>
+
+            <div>
+
+              <h3 class="font-bold mb-3">
+                Comentários Internos
+              </h3>
+
+              <textarea
+                id="novo-comentario"
+                class="input mb-3"
+                placeholder="Adicionar comentário..."
+              ></textarea>
+
+              <button
+                id="salvar-comentario"
+                class="btn-primary"
+              >
+                Salvar comentário
+              </button>
+
+              <div
+                id="comentarios-container"
+                class="mt-4 space-y-3"
+              ></div>
+
+            </div>
+
           </div>
+        `
 
-          <div>
-            <h3 class="text-sm text-slate-500 mb-1">
-              RA
-            </h3>
+        detalhesModal
+          .classList
+          .remove('hidden')
 
-            <p class="font-semibold">
-              ${atendimento.ra || '-'}
-            </p>
-          </div>
+        carregarComentarios(id)
 
-          <div>
-            <h3 class="text-sm text-slate-500 mb-1">
-              CPF
-            </h3>
+        document
+          .getElementById(
+            'salvar-comentario'
+          )
+          .addEventListener(
+            'click',
+            async () => {
 
-            <p class="font-semibold">
-              ${atendimento.cpf || '-'}
-            </p>
-          </div>
+              const texto =
+                document
+                  .getElementById(
+                    'novo-comentario'
+                  ).value
 
-          <div>
-            <h3 class="text-sm text-slate-500 mb-1">
-              Curso
-            </h3>
+              if (!texto) return
 
-            <p class="font-semibold">
-              ${atendimento.curso}
-            </p>
-          </div>
+              await supabase
+                .from(
+                  'comentarios_atendimento'
+                )
+                .insert([
+                  {
+                    atendimento_id: id,
+                    comentario: texto,
+                    usuario: 'Coordenação'
+                  }
+                ])
 
-          <div>
-            <h3 class="text-sm text-slate-500 mb-1">
-              Responsável
-            </h3>
+              await criarEventoTimeline(
+                id,
+                'Comentário interno adicionado'
+              )
 
-            <p class="font-semibold">
-              ${atendimento.responsavel}
-            </p>
-          </div>
+              carregarComentarios(id)
 
-          <div>
-            <h3 class="text-sm text-slate-500 mb-1">
-              Prioridade
-            </h3>
-
-            <p class="font-semibold">
-              ${atendimento.prioridade}
-            </p>
-          </div>
-
-          <div>
-            <h3 class="text-sm text-slate-500 mb-1">
-              Status
-            </h3>
-
-            <p class="font-semibold">
-              ${atendimento.status}
-            </p>
-          </div>
-
-          <div>
-            <h3 class="text-sm text-slate-500 mb-1">
-              Categoria
-            </h3>
-
-            <p class="font-semibold">
-              ${atendimento.tipo_problema}
-            </p>
-          </div>
-
-        </div>
-
-        <div class="mt-8">
-
-          <h3 class="text-sm text-slate-500 mb-2">
-            Descrição / Pendência
-          </h3>
-
-          <div class="bg-slate-100 rounded-2xl p-5">
-            ${atendimento.descricao_pendencia || '-'}
-          </div>
-
-        </div>
-
-        ${
-          atendimento.descricao_resolucao
-            ? `
-              <div class="mt-6">
-
-                <h3 class="text-sm text-slate-500 mb-2">
-                  Resolução
-                </h3>
-
-                <div class="bg-green-50 rounded-2xl p-5">
-                  ${atendimento.descricao_resolucao}
-                </div>
-
-              </div>
-            `
-            : ''
-        }
-
-        <div class="mt-6 text-sm text-slate-500">
-
-          Criado em:
-          ${formatarData(atendimento.created_at)}
-
-        </div>
-      `
-
-      detalhesModal.classList.remove('hidden')
-    })
+              document
+                .getElementById(
+                  'novo-comentario'
+                ).value = ''
+            })
+      })
   })
 }
 
@@ -501,37 +549,42 @@ function adicionarEventosResolver() {
 
   botoes.forEach(botao => {
 
-    botao.addEventListener('click', async () => {
+    botao.addEventListener(
+      'click',
+      async () => {
 
-      const id = botao.dataset.id
+        const id = botao.dataset.id
 
-      const resolucao = prompt(
-        'Digite a resolução do atendimento:'
-      )
+        const resolucao = prompt(
+          'Digite a resolução:'
+        )
 
-      if (!resolucao) return
+        if (!resolucao) return
 
-      const { error } = await supabase
-        .from('atendimentos')
-        .update({
-          status: 'Resolvido',
-          descricao_resolucao: resolucao
-        })
-        .eq('id', id)
+        const { error } =
+          await supabase
+            .from('atendimentos')
+            .update({
+              status: 'Resolvido',
+              descricao_resolucao:
+                resolucao
+            })
+            .eq('id', id)
 
-      if (error) {
+        if (error) {
 
-        console.error(error)
+          alert('Erro.')
 
-        alert('Erro ao resolver atendimento.')
+          return
+        }
 
-        return
-      }
+        await criarEventoTimeline(
+          id,
+          'Atendimento resolvido'
+        )
 
-      alert('Atendimento resolvido.')
-
-      carregarAtendimentos()
-    })
+        carregarAtendimentos()
+      })
   })
 }
 
@@ -546,182 +599,27 @@ function adicionarEventosExcluir() {
 
   botoes.forEach(botao => {
 
-    botao.addEventListener('click', async () => {
+    botao.addEventListener(
+      'click',
+      async () => {
 
-      const confirmar = confirm(
-        'Deseja realmente excluir este atendimento?'
-      )
+        const confirmar = confirm(
+          'Deseja excluir?'
+        )
 
-      if (!confirmar) return
+        if (!confirmar) return
 
-      const id = botao.dataset.id
+        const id =
+          botao.dataset.id
 
-      const { error } = await supabase
-        .from('atendimentos')
-        .delete()
-        .eq('id', id)
+        await supabase
+          .from('atendimentos')
+          .delete()
+          .eq('id', id)
 
-      if (error) {
-
-        console.error(error)
-
-        alert('Erro ao excluir atendimento.')
-
-        return
-      }
-
-      alert('Atendimento excluído.')
-
-      carregarAtendimentos()
-    })
+        carregarAtendimentos()
+      })
   })
-}
-
-/* =========================
-   GRÁFICOS
-========================= */
-
-async function carregarGraficos() {
-
-  const { data, error } = await supabase
-    .from('atendimentos')
-    .select('*')
-
-  if (error) {
-    console.error(error)
-    return
-  }
-
-  /* CATEGORIAS */
-
-  const categorias = {}
-
-  data.forEach(item => {
-
-    const categoria =
-      item.tipo_problema?.[0] || 'Outro'
-
-    categorias[categoria] =
-      (categorias[categoria] || 0) + 1
-  })
-
-  /* CURSOS */
-
-  const cursos = {}
-
-  data.forEach(item => {
-
-    cursos[item.curso] =
-      (cursos[item.curso] || 0) + 1
-  })
-
-  /* STATUS */
-
-  const pendentes =
-    data.filter(
-      item => item.status === 'Pendente'
-    ).length
-
-  const resolvidos =
-    data.filter(
-      item => item.status === 'Resolvido'
-    ).length
-
-  /* RESPONSÁVEL */
-
-  const responsaveis = {}
-
-  data.forEach(item => {
-
-    responsaveis[item.responsavel] =
-      (responsaveis[item.responsavel] || 0) + 1
-  })
-
-  /* LIMPAR GRÁFICOS ANTIGOS */
-
-  document.getElementById('graficoCategorias').remove()
-
-  document.querySelector('#graficoCategorias-container')
-    ?.remove()
-
-  /* recriar canvases */
-
-  document.querySelectorAll('canvas').forEach(canvas => {
-    canvas.replaceWith(canvas.cloneNode())
-  })
-
-  /* GRÁFICO CATEGORIAS */
-
-  new Chart(
-    document.getElementById('graficoCategorias'),
-    {
-      type: 'bar',
-
-      data: {
-
-        labels: Object.keys(categorias),
-
-        datasets: [{
-          label: 'Atendimentos',
-          data: Object.values(categorias)
-        }]
-      }
-    }
-  )
-
-  /* CURSOS */
-
-  new Chart(
-    document.getElementById('graficoCursos'),
-    {
-      type: 'pie',
-
-      data: {
-
-        labels: Object.keys(cursos),
-
-        datasets: [{
-          data: Object.values(cursos)
-        }]
-      }
-    }
-  )
-
-  /* STATUS */
-
-  new Chart(
-    document.getElementById('graficoStatus'),
-    {
-      type: 'doughnut',
-
-      data: {
-
-        labels: ['Pendentes', 'Resolvidos'],
-
-        datasets: [{
-          data: [pendentes, resolvidos]
-        }]
-      }
-    }
-  )
-
-  /* RESPONSÁVEIS */
-
-  new Chart(
-    document.getElementById('graficoResponsavel'),
-    {
-      type: 'polarArea',
-
-      data: {
-
-        labels: Object.keys(responsaveis),
-
-        datasets: [{
-          data: Object.values(responsaveis)
-        }]
-      }
-    }
-  )
 }
 
 /* =========================
@@ -730,22 +628,33 @@ async function carregarGraficos() {
 
 function atualizarKPIs(data) {
 
-  document.getElementById('kpi-total').textContent =
-    data.length
+  document.getElementById(
+    'kpi-total'
+  ).textContent = totalRegistros
 
-  document.getElementById('kpi-pendentes').textContent =
-    data.filter(item =>
-      item.status === 'Pendente'
+  document.getElementById(
+    'kpi-pendentes'
+  ).textContent =
+    data.filter(
+      item =>
+        item.status === 'Pendente'
     ).length
 
-  document.getElementById('kpi-resolvidos').textContent =
-    data.filter(item =>
-      item.status === 'Resolvido'
+  document.getElementById(
+    'kpi-resolvidos'
+  ).textContent =
+    data.filter(
+      item =>
+        item.status === 'Resolvido'
     ).length
 
-  document.getElementById('kpi-urgentes').textContent =
-    data.filter(item =>
-      item.prioridade === 'Urgente'
+  document.getElementById(
+    'kpi-urgentes'
+  ).textContent =
+    data.filter(
+      item =>
+        item.prioridade ===
+        'Urgente'
     ).length
 }
 
@@ -753,122 +662,168 @@ function atualizarKPIs(data) {
    SALVAR
 ========================= */
 
-form.addEventListener('submit', async (e) => {
+form.addEventListener(
+  'submit',
+  async (e) => {
 
-  e.preventDefault()
+    e.preventDefault()
 
-  const novoAtendimento = {
+    const novoAtendimento = {
 
-    nome_aluno:
-      document.getElementById('nome_aluno').value,
+      nome_aluno:
+        document.getElementById(
+          'nome_aluno'
+        ).value,
 
-    ra:
-      document.getElementById('ra').value,
+      ra:
+        document.getElementById(
+          'ra'
+        ).value,
 
-    cpf:
-      document.getElementById('cpf').value,
+      cpf:
+        document.getElementById(
+          'cpf'
+        ).value,
 
-    curso:
-      document.getElementById('curso').value,
+      curso:
+        document.getElementById(
+          'curso'
+        ).value,
 
-    responsavel:
-      document.getElementById('responsavel').value,
+      responsavel:
+        document.getElementById(
+          'responsavel'
+        ).value,
 
-    prioridade:
-      document.getElementById('prioridade').value,
+      prioridade:
+        document.getElementById(
+          'prioridade'
+        ).value,
 
-    status:
-      document.getElementById('status').value,
+      status:
+        document.getElementById(
+          'status'
+        ).value,
 
-    tipo_problema: [
-      document.getElementById('tipo_problema').value
-    ],
+      tipo_problema: [
+        document.getElementById(
+          'tipo_problema'
+        ).value
+      ],
 
-    descricao_pendencia:
-      document.getElementById('descricao').value
-  }
+      descricao_pendencia:
+        document.getElementById(
+          'descricao'
+        ).value
+    }
 
-  const { error } = await supabase
-    .from('atendimentos')
-    .insert([novoAtendimento])
+    const { data, error } =
+      await supabase
+        .from('atendimentos')
+        .insert([novoAtendimento])
+        .select()
 
-  if (error) {
+    if (error) {
 
-    console.error(error)
+      alert('Erro.')
 
-    alert('Erro ao salvar atendimento.')
+      return
+    }
 
-    return
-  }
+    await criarEventoTimeline(
+      data[0].id,
+      'Atendimento criado'
+    )
 
-  alert('Atendimento salvo com sucesso.')
+    form.reset()
 
-  form.reset()
+    modal.classList.add('hidden')
 
-  modal.classList.add('hidden')
+    carregarAtendimentos()
+  })
 
-  carregarAtendimentos()
+/* =========================
+   FILTROS
+========================= */
+
+btnPendentes.addEventListener(
+  'click',
+  () => {
+
+    filtroAtual =
+      'pendentes'
+
+    paginaAtual = 1
+
+    carregarAtendimentos()
+})
+
+btnResolvidos.addEventListener(
+  'click',
+  () => {
+
+    filtroAtual =
+      'resolvidos'
+
+    paginaAtual = 1
+
+    carregarAtendimentos()
+})
+
+btnHistorico.addEventListener(
+  'click',
+  () => {
+
+    filtroAtual = 'todos'
+
+    paginaAtual = 1
+
+    dadosGerais
+      .classList
+      .add('hidden')
+
+    container.parentElement
+      .classList
+      .remove('hidden')
+
+    carregarAtendimentos()
 })
 
 /* =========================
-   EVENTOS FILTROS
+   PAGINAÇÃO
 ========================= */
 
-btnPendentes.addEventListener('click', () => {
+btnAnterior.addEventListener(
+  'click',
+  () => {
 
-  filtroAtual = 'pendentes'
+    if (paginaAtual > 1) {
 
-  carregarAtendimentos()
+      paginaAtual--
+
+      carregarAtendimentos()
+    }
 })
 
-btnResolvidos.addEventListener('click', () => {
+btnProxima.addEventListener(
+  'click',
+  () => {
 
-  filtroAtual = 'resolvidos'
+    const totalPaginas =
+      Math.ceil(
+        totalRegistros /
+        itensPorPagina
+      )
 
-  carregarAtendimentos()
-})
+    if (
+      paginaAtual <
+      totalPaginas
+    ) {
 
-btnHistorico.addEventListener('click', () => {
+      paginaAtual++
 
-  filtroAtual = 'todos'
-
-  dadosGerais.classList.add('hidden')
-
-  container.parentElement.classList.remove('hidden')
-
-  carregarAtendimentos()
-})
-
-btnDados.addEventListener('click', async () => {
-
-  /* esconder lista */
-
-  container.parentElement.classList.add('hidden')
-
-  /* mostrar dashboard */
-
-  dadosGerais.classList.remove('hidden')
-
-  /* carregar gráficos */
-
-  await carregarGraficos()
-})
-
-btnAnterior.addEventListener('click', () => {
-
-  if (paginaAtual > 1) {
-
-    paginaAtual--
-
-    carregarAtendimentos()
-  }
-})
-
-btnProxima.addEventListener('click', () => {
-
-  paginaAtual++
-
-  carregarAtendimentos()
+      carregarAtendimentos()
+    }
 })
 
 /* =========================
