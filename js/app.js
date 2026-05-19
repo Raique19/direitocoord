@@ -435,58 +435,175 @@ function adicionarEventosDetalhes(data) {
 
           `).join('')
 
-        detalhesContent.innerHTML = `
+       detalhesContent.innerHTML = `
 
-          <div class="space-y-6">
+  <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 
-            <div>
-              <h2 class="text-2xl font-bold">
-                ${atendimento.nome_aluno}
-              </h2>
-            </div>
+    <div>
+      <h3 class="text-sm text-slate-500 mb-1">
+        Nome do aluno
+      </h3>
 
-            <div class="bg-slate-100 rounded-2xl p-5">
-              ${atendimento.descricao_pendencia}
-            </div>
+      <p class="font-semibold text-lg">
+        ${atendimento.nome_aluno}
+      </p>
+    </div>
 
-            <div>
+    <div>
+      <h3 class="text-sm text-slate-500 mb-1">
+        RA
+      </h3>
 
-              <h3 class="font-bold mb-4">
-                Timeline
-              </h3>
+      <p class="font-semibold">
+        ${atendimento.ra || '-'}
+      </p>
+    </div>
 
-              ${timelineHTML}
+    <div>
+      <h3 class="text-sm text-slate-500 mb-1">
+        CPF
+      </h3>
 
-            </div>
+      <p class="font-semibold">
+        ${atendimento.cpf || '-'}
+      </p>
+    </div>
 
-            <div>
+    <div>
+      <h3 class="text-sm text-slate-500 mb-1">
+        Curso
+      </h3>
 
-              <h3 class="font-bold mb-3">
-                Comentários Internos
-              </h3>
+      <p class="font-semibold">
+        ${atendimento.curso}
+      </p>
+    </div>
 
-              <textarea
-                id="novo-comentario"
-                class="input mb-3"
-                placeholder="Adicionar comentário..."
-              ></textarea>
+    <div>
+      <h3 class="text-sm text-slate-500 mb-1">
+        Responsável
+      </h3>
 
-              <button
-                id="salvar-comentario"
-                class="btn-primary"
-              >
-                Salvar comentário
-              </button>
+      <p class="font-semibold">
+        ${atendimento.responsavel}
+      </p>
+    </div>
 
-              <div
-                id="comentarios-container"
-                class="mt-4 space-y-3"
-              ></div>
+    <div>
+      <h3 class="text-sm text-slate-500 mb-1">
+        Prioridade
+      </h3>
 
-            </div>
+      <p class="${prioridadeClass(atendimento.prioridade)}">
+        ${atendimento.prioridade}
+      </p>
+    </div>
 
+    <div>
+      <h3 class="text-sm text-slate-500 mb-1">
+        Status
+      </h3>
+
+      <p class="font-semibold">
+        ${atendimento.status}
+      </p>
+    </div>
+
+    <div>
+      <h3 class="text-sm text-slate-500 mb-1">
+        Categoria
+      </h3>
+
+      <p class="font-semibold">
+        ${atendimento.tipo_problema}
+      </p>
+    </div>
+
+  </div>
+
+  <div class="mt-8">
+
+    <h3 class="text-sm text-slate-500 mb-2">
+      Descrição / Pendência
+    </h3>
+
+    <div class="bg-slate-100 rounded-2xl p-5">
+      ${atendimento.descricao_pendencia || '-'}
+    </div>
+
+  </div>
+
+  ${
+    atendimento.descricao_resolucao
+      ? `
+        <div class="mt-6">
+
+          <h3 class="text-sm text-slate-500 mb-2">
+            Resolução
+          </h3>
+
+          <div class="bg-green-50 rounded-2xl p-5">
+            ${atendimento.descricao_resolucao}
           </div>
-        `
+
+        </div>
+      `
+      : ''
+  }
+
+  <!-- TIMELINE -->
+
+  <div class="mt-8">
+
+    <h3 class="font-bold mb-4">
+      Timeline
+    </h3>
+
+    ${
+      timelineHTML || `
+        <p class="text-slate-400">
+          Nenhum evento registrado.
+        </p>
+      `
+    }
+
+  </div>
+
+  <!-- COMENTÁRIOS -->
+
+  <div class="mt-8">
+
+    <h3 class="font-bold mb-3">
+      Comentários Internos
+    </h3>
+
+    <textarea
+      id="novo-comentario"
+      class="input mb-3"
+      placeholder="Adicionar comentário..."
+    ></textarea>
+
+    <button
+      id="salvar-comentario"
+      class="btn-primary"
+    >
+      Salvar comentário
+    </button>
+
+    <div
+      id="comentarios-container"
+      class="mt-4 space-y-3"
+    ></div>
+
+  </div>
+
+  <div class="mt-6 text-sm text-slate-500">
+
+    Criado em:
+    ${formatarData(atendimento.created_at)}
+
+  </div>
+`
 
         detalhesModal
           .classList
