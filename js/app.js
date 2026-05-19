@@ -5,10 +5,15 @@ import { supabase } from './supabase.js'
 ========================= */
 
 const modal = document.getElementById('modal')
-const openModal = document.getElementById('open-modal')
-const closeModal = document.getElementById('close-modal')
 
-const form = document.getElementById('atendimento-form')
+const openModal =
+  document.getElementById('open-modal')
+
+const closeModal =
+  document.getElementById('close-modal')
+
+const form =
+  document.getElementById('atendimento-form')
 
 const container =
   document.getElementById('atendimentos-container')
@@ -30,6 +35,10 @@ const btnDados =
   document.getElementById('btn-dados')
 
 let filtroAtual = 'todos'
+
+/* =========================
+   BUSCA
+========================= */
 
 let termoBusca = ''
 
@@ -59,10 +68,12 @@ closeDetalhes.addEventListener('click', () => {
 ========================= */
 
 openModal.addEventListener('click', () => {
+
   modal.classList.remove('hidden')
 })
 
 closeModal.addEventListener('click', () => {
+
   modal.classList.add('hidden')
 })
 
@@ -74,12 +85,14 @@ function formatarData(dataISO) {
 
   const data = new Date(dataISO)
 
-  return data.toLocaleDateString('pt-BR') +
+  return (
+    data.toLocaleDateString('pt-BR') +
     ' • ' +
     data.toLocaleTimeString('pt-BR', {
       hour: '2-digit',
       minute: '2-digit'
     })
+  )
 }
 
 /* =========================
@@ -90,16 +103,16 @@ function mascararCPF(cpf) {
 
   if (!cpf) return '-'
 
-  return `***.${cpf.slice(3,6)}.***`
+  return `***.${cpf.slice(3, 6)}.***`
 }
 
 /* =========================
-   CLASSE PRIORIDADE
+   PRIORIDADE
 ========================= */
 
 function prioridadeClass(prioridade) {
 
-  switch(prioridade) {
+  switch (prioridade) {
 
     case 'Baixa':
       return 'prioridade-baixa'
@@ -142,40 +155,47 @@ async function carregarAtendimentos() {
       ascending: false
     })
 
+  /* FILTROS */
+
   if (filtroAtual === 'pendentes') {
 
     query = query.eq('status', 'Pendente')
-
   }
 
   if (filtroAtual === 'resolvidos') {
 
     query = query.eq('status', 'Resolvido')
-
   }
+
+  /* BUSCA */
 
   if (termoBusca.trim() !== '') {
 
-  query = query.or(`
-    nome_aluno.ilike.%${termoBusca}%,
-    ra.ilike.%${termoBusca}%,
-    cpf.ilike.%${termoBusca}%
-  `)
-}
+    query = query.or(`
+      nome_aluno.ilike.%${termoBusca}%,
+      ra.ilike.%${termoBusca}%,
+      cpf.ilike.%${termoBusca}%
+    `)
+  }
 
-const { data, error } = await query
+  const { data, error } = await query
 
   if (error) {
+
     console.error(error)
+
     return
   }
 
   container.innerHTML = ''
 
+  /* SEM RESULTADOS */
+
   if (data.length === 0) {
 
     container.innerHTML = `
       <div class="bg-white rounded-3xl p-10 text-center">
+
         <h3 class="text-2xl font-bold mb-2">
           Nenhum atendimento encontrado
         </h3>
@@ -183,6 +203,7 @@ const { data, error } = await query
         <p class="text-slate-500">
           Não existem registros nesta categoria.
         </p>
+
       </div>
     `
 
@@ -190,6 +211,8 @@ const { data, error } = await query
 
     return
   }
+
+  /* CARDS */
 
   data.forEach(atendimento => {
 
@@ -273,13 +296,14 @@ const { data, error } = await query
         }
 
       </div>
-
     `
 
     container.appendChild(card)
   })
 
-  adicionarEventosResolver(data)
+  adicionarEventosDetalhes(data)
+
+  adicionarEventosResolver()
 
   atualizarKPIs(data)
 }
@@ -309,7 +333,6 @@ function adicionarEventosDetalhes(data) {
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
 
           <div>
-
             <h3 class="text-sm text-slate-500 mb-1">
               Nome do aluno
             </h3>
@@ -317,11 +340,9 @@ function adicionarEventosDetalhes(data) {
             <p class="font-semibold text-lg">
               ${atendimento.nome_aluno}
             </p>
-
           </div>
 
           <div>
-
             <h3 class="text-sm text-slate-500 mb-1">
               RA
             </h3>
@@ -329,11 +350,9 @@ function adicionarEventosDetalhes(data) {
             <p class="font-semibold">
               ${atendimento.ra || '-'}
             </p>
-
           </div>
 
           <div>
-
             <h3 class="text-sm text-slate-500 mb-1">
               CPF
             </h3>
@@ -341,11 +360,9 @@ function adicionarEventosDetalhes(data) {
             <p class="font-semibold">
               ${atendimento.cpf || '-'}
             </p>
-
           </div>
 
           <div>
-
             <h3 class="text-sm text-slate-500 mb-1">
               Curso
             </h3>
@@ -353,11 +370,9 @@ function adicionarEventosDetalhes(data) {
             <p class="font-semibold">
               ${atendimento.curso}
             </p>
-
           </div>
 
           <div>
-
             <h3 class="text-sm text-slate-500 mb-1">
               Responsável
             </h3>
@@ -365,11 +380,9 @@ function adicionarEventosDetalhes(data) {
             <p class="font-semibold">
               ${atendimento.responsavel}
             </p>
-
           </div>
 
           <div>
-
             <h3 class="text-sm text-slate-500 mb-1">
               Prioridade
             </h3>
@@ -377,11 +390,9 @@ function adicionarEventosDetalhes(data) {
             <p class="font-semibold">
               ${atendimento.prioridade}
             </p>
-
           </div>
 
           <div>
-
             <h3 class="text-sm text-slate-500 mb-1">
               Status
             </h3>
@@ -389,11 +400,9 @@ function adicionarEventosDetalhes(data) {
             <p class="font-semibold">
               ${atendimento.status}
             </p>
-
           </div>
 
           <div>
-
             <h3 class="text-sm text-slate-500 mb-1">
               Categoria
             </h3>
@@ -401,7 +410,6 @@ function adicionarEventosDetalhes(data) {
             <p class="font-semibold">
               ${atendimento.tipo_problema}
             </p>
-
           </div>
 
         </div>
@@ -442,7 +450,6 @@ function adicionarEventosDetalhes(data) {
           ${formatarData(atendimento.created_at)}
 
         </div>
-
       `
 
       detalhesModal.classList.remove('hidden')
@@ -480,37 +487,16 @@ function adicionarEventosResolver() {
         .eq('id', id)
 
       if (error) {
+
         console.error(error)
+
         alert('Erro ao resolver atendimento.')
+
         return
       }
 
       alert('Atendimento resolvido.')
 
-       /* =========================
-   EVENTOS FILTROS
-========================= */
-
-btnPendentes.addEventListener('click', () => {
-
-  filtroAtual = 'pendentes'
-
-  carregarAtendimentos()
-})
-
-btnResolvidos.addEventListener('click', () => {
-
-  filtroAtual = 'resolvidos'
-
-  carregarAtendimentos()
-})
-
-btnHistorico.addEventListener('click', () => {
-
-  filtroAtual = 'todos'
-
-  carregarAtendimentos()
-})
       carregarAtendimentos()
     })
   })
@@ -585,8 +571,11 @@ form.addEventListener('submit', async (e) => {
     .insert([novoAtendimento])
 
   if (error) {
+
     console.error(error)
+
     alert('Erro ao salvar atendimento.')
+
     return
   }
 
@@ -595,6 +584,31 @@ form.addEventListener('submit', async (e) => {
   form.reset()
 
   modal.classList.add('hidden')
+
+  carregarAtendimentos()
+})
+
+/* =========================
+   EVENTOS FILTROS
+========================= */
+
+btnPendentes.addEventListener('click', () => {
+
+  filtroAtual = 'pendentes'
+
+  carregarAtendimentos()
+})
+
+btnResolvidos.addEventListener('click', () => {
+
+  filtroAtual = 'resolvidos'
+
+  carregarAtendimentos()
+})
+
+btnHistorico.addEventListener('click', () => {
+
+  filtroAtual = 'todos'
 
   carregarAtendimentos()
 })
