@@ -119,6 +119,17 @@ function prioridadeClass(prioridade) {
 }
 
 /* =========================
+   BUSCA
+========================= */
+
+buscaInput.addEventListener('input', (e) => {
+
+  termoBusca = e.target.value
+
+  carregarAtendimentos()
+})
+
+/* =========================
    CARREGAR ATENDIMENTOS
 ========================= */
 
@@ -143,7 +154,16 @@ async function carregarAtendimentos() {
 
   }
 
-  const { data, error } = await query
+  if (termoBusca.trim() !== '') {
+
+  query = query.or(`
+    nome_aluno.ilike.%${termoBusca}%,
+    ra.ilike.%${termoBusca}%,
+    cpf.ilike.%${termoBusca}%
+  `)
+}
+
+const { data, error } = await query
 
   if (error) {
     console.error(error)
