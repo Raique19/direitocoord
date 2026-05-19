@@ -1,4 +1,147 @@
 <!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>Painel de Atendimentos</title>
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <link rel="stylesheet" href="./css/style.css">
+</head>
+
+<body class="bg-slate-100">
+
+<div class="flex min-h-screen">
+
+  <!-- SIDEBAR -->
+  <aside class="w-72 bg-slate-900 text-white p-6">
+
+    <h1 class="text-2xl font-bold mb-8">
+      Coordenação
+    </h1>
+
+    <nav class="space-y-3">
+      <button class="menu-btn">Novo Atendimento</button>
+      <button class="menu-btn">Pendentes</button>
+      <button class="menu-btn">Resolvidos</button>
+      <button class="menu-btn">Histórico</button>
+      <button class="menu-btn">Dados Gerais</button>
+    </nav>
+
+    <button
+      id="logout-btn"
+      class="mt-10 w-full bg-red-500 p-3 rounded-lg"
+    >
+      Sair
+    </button>
+
+  </aside>
+
+  <!-- CONTEÚDO -->
+  <main class="flex-1 p-8">
+
+    <div class="flex justify-between items-center mb-8">
+
+      <div>
+        <h2 class="text-3xl font-bold">
+          Painel de Atendimentos
+        </h2>
+
+        <p class="text-slate-500">
+          Coordenação Direito & RI
+        </p>
+      </div>
+
+      <button
+        id="open-modal"
+        class="bg-slate-800 text-white px-5 py-3 rounded-lg"
+      >
+        + Novo Atendimento
+      </button>
+
+    </div>
+
+    <!-- KPIs -->
+    <section class="grid grid-cols-4 gap-4 mb-8">
+
+      <div class="kpi-card">
+        <h3>Total</h3>
+        <p id="kpi-total">0</p>
+      </div>
+
+      <div class="kpi-card">
+        <h3>Pendentes</h3>
+        <p id="kpi-pendentes">0</p>
+      </div>
+
+      <div class="kpi-card">
+        <h3>Resolvidos</h3>
+        <p id="kpi-resolvidos">0</p>
+      </div>
+
+      <div class="kpi-card">
+        <h3>Urgentes</h3>
+        <p id="kpi-urgentes">0</p>
+      </div>
+
+    </section>
+
+    <!-- LISTA -->
+    <section>
+      <div id="atendimentos-container" class="grid gap-4">
+      </div>
+    </section>
+
+  </main>
+
+</div>
+
+<!-- MODAL -->
+<div
+  id="modal"
+  class="hidden fixed inset-0 bg-black/40 flex items-center justify-center"
+>
+
+  <div class="bg-white w-full max-w-2xl rounded-2xl p-8">
+
+    <div class="flex justify-between items-center mb-6">
+      <h2 class="text-2xl font-bold">
+        Novo Atendimento
+      </h2>
+
+      <button id="close-modal">✕</button>
+    </div>
+
+    <form id="atendimento-form" class="grid grid-cols-2 gap-4">
+
+      <input
+        type="text"
+        id="nome_aluno"
+        placeholder="Nome do aluno"
+        class="input"
+      >
+
+      <input
+        type="text"
+        id="ra"
+        placeholder="RA"
+        class="input"
+      >
+
+      <input
+        type="text"
+        id="cpf"
+        placeholder="CPF"
+        class="input"
+      >
+
+      <select id="curso" class="input">
+        <option value="">Curso</option>
+        <option value="Direito">Direito</option>
+        <option value="RI">RI</option>
       </select>
 
       <select id="responsavel" class="input">
@@ -49,6 +192,7 @@
 
 </div>
 
-<script type="module" src="js/app.js"></script>
+<script type="module" src="./js/app.js"></script>
+
 </body>
 </html>
