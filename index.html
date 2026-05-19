@@ -112,10 +112,18 @@
         Novo Atendimento
       </h2>
 
-      <button id="close-modal">✕</button>
+      <button
+  id="close-modal"
+  class="text-slate-400 hover:text-slate-700 text-2xl"
+>
+  ✕
+</button>
     </div>
 
-    <form id="atendimento-form" class="grid grid-cols-2 gap-4">
+    <form
+  id="atendimento-form"
+  class="grid grid-cols-1 md:grid-cols-2 gap-5 mt-6"
+>
 
       <input
         type="text"
@@ -176,12 +184,12 @@
       <textarea
         id="descricao"
         placeholder="Descrição"
-        class="input col-span-2 h-32"
+        class="input md:col-span-2 h-40"
       ></textarea>
 
       <button
         type="submit"
-        class="bg-slate-800 text-white p-3 rounded-lg col-span-2"
+        class="btn-primary md:col-span-2"
       >
         Salvar Atendimento
       </button>
