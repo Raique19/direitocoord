@@ -294,3 +294,15 @@ h2 {
   }
 
 }
+   .btn-delete {
+  background: #ef4444;
+  color: white;
+  padding: 10px 16px;
+  border-radius: 12px;
+  transition: 0.2s;
+  font-weight: 600;
+}
+
+.btn-delete:hover {
+  opacity: 0.9;
+}
