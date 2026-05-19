@@ -1,13 +1,6 @@
 import { supabase } from './supabase.js'
 
 /* =========================
-   PAGINAÇÃO
-========================= */
-
-let paginaAtual = 1
-const itensPorPagina = 10
-
-/* =========================
    ELEMENTOS
 ========================= */
 
@@ -27,15 +20,6 @@ const container =
 
 const dadosGerais =
   document.getElementById('dados-gerais')
-
-const paginaInfo =
-  document.getElementById('pagina-info')
-
-const btnAnterior =
-  document.getElementById('pagina-anterior')
-
-const btnProxima =
-  document.getElementById('proxima-pagina')
 
 /* =========================
    FILTROS
@@ -169,7 +153,7 @@ async function carregarAtendimentos() {
 
   let query = supabase
     .from('atendimentos')
-    .select('*', { count: 'exact' })
+    .select('*')
     .order('created_at', {
       ascending: false
     })
@@ -197,11 +181,7 @@ async function carregarAtendimentos() {
     `)
   }
 
- const inicio = (paginaAtual - 1) * itensPorPagina
-const fim = inicio + itensPorPagina - 1
-
-const { data, error, count } = await query
-  .range(inicio, fim)
+  const { data, error } = await query
 
   if (error) {
 
@@ -328,18 +308,6 @@ const { data, error, count } = await query
 
   atualizarKPIs(data)
 }
-
-const totalPaginas =
-  Math.ceil(count / itensPorPagina)
-
-paginaInfo.textContent =
-  `Página ${paginaAtual} de ${totalPaginas}`
-
-btnAnterior.disabled =
-  paginaAtual === 1
-
-btnProxima.disabled =
-  paginaAtual === totalPaginas
 
 /* =========================
    DETALHES
@@ -852,23 +820,6 @@ btnDados.addEventListener('click', async () => {
   /* carregar gráficos */
 
   await carregarGraficos()
-})
-
-btnAnterior.addEventListener('click', () => {
-
-  if (paginaAtual > 1) {
-
-    paginaAtual--
-
-    carregarAtendimentos()
-  }
-})
-
-btnProxima.addEventListener('click', () => {
-
-  paginaAtual++
-
-  carregarAtendimentos()
 })
 
 /* =========================
