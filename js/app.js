@@ -18,6 +18,9 @@ const form =
 const container =
   document.getElementById('atendimentos-container')
 
+const dadosGerais =
+  document.getElementById('dados-gerais')
+
 /* =========================
    FILTROS
 ========================= */
