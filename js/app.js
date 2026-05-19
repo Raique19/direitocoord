@@ -271,7 +271,7 @@ async function carregarAtendimentos() {
           atendimento.status === 'Pendente'
             ? `
               <button
-                class="btn-danger resolver-btn"
+                class="btn-success resolver-btn"
                 data-id="${atendimento.id}"
               >
                 Resolver
