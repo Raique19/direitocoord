@@ -28,6 +28,15 @@ const container =
 const dadosGerais =
   document.getElementById('dados-gerais')
 
+const paginaInfo =
+  document.getElementById('pagina-info')
+
+const btnAnterior =
+  document.getElementById('pagina-anterior')
+
+const btnProxima =
+  document.getElementById('proxima-pagina')
+
 /* =========================
    FILTROS
 ========================= */
@@ -319,6 +328,18 @@ const { data, error, count } = await query
 
   atualizarKPIs(data)
 }
+
+const totalPaginas =
+  Math.ceil(count / itensPorPagina)
+
+paginaInfo.textContent =
+  `Página ${paginaAtual} de ${totalPaginas}`
+
+btnAnterior.disabled =
+  paginaAtual === 1
+
+btnProxima.disabled =
+  paginaAtual === totalPaginas
 
 /* =========================
    DETALHES
@@ -831,6 +852,23 @@ btnDados.addEventListener('click', async () => {
   /* carregar gráficos */
 
   await carregarGraficos()
+})
+
+btnAnterior.addEventListener('click', () => {
+
+  if (paginaAtual > 1) {
+
+    paginaAtual--
+
+    carregarAtendimentos()
+  }
+})
+
+btnProxima.addEventListener('click', () => {
+
+  paginaAtual++
+
+  carregarAtendimentos()
 })
 
 /* =========================
