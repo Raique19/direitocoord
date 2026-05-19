@@ -280,6 +280,13 @@ async function carregarAtendimentos() {
             : ''
         }
 
+        <button
+  class="btn-delete excluir-btn"
+  data-id="${atendimento.id}"
+>
+  Excluir
+</button>
+
       </div>
 
     </div>
@@ -293,6 +300,8 @@ async function carregarAtendimentos() {
   adicionarEventosDetalhes(data)
 
   adicionarEventosResolver()
+
+   adicionarEventosExcluir()
 
   atualizarKPIs(data)
 }
@@ -485,6 +494,48 @@ function adicionarEventosResolver() {
       }
 
       alert('Atendimento resolvido.')
+
+      carregarAtendimentos()
+    })
+  })
+}
+
+/* =========================
+   EXCLUIR
+========================= */
+
+function adicionarEventosExcluir() {
+
+  const botoes =
+    document.querySelectorAll('.excluir-btn')
+
+  botoes.forEach(botao => {
+
+    botao.addEventListener('click', async () => {
+
+      const confirmar = confirm(
+        'Deseja realmente excluir este atendimento?'
+      )
+
+      if (!confirmar) return
+
+      const id = botao.dataset.id
+
+      const { error } = await supabase
+        .from('atendimentos')
+        .delete()
+        .eq('id', id)
+
+      if (error) {
+
+        console.error(error)
+
+        alert('Erro ao excluir atendimento.')
+
+        return
+      }
+
+      alert('Atendimento excluído.')
 
       carregarAtendimentos()
     })
