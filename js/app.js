@@ -1,6 +1,13 @@
 import { supabase } from './supabase.js'
 
 /* =========================
+   PAGINAÇÃO
+========================= */
+
+let paginaAtual = 1
+const itensPorPagina = 10
+
+/* =========================
    ELEMENTOS
 ========================= */
 
@@ -153,7 +160,7 @@ async function carregarAtendimentos() {
 
   let query = supabase
     .from('atendimentos')
-    .select('*')
+    .select('*', { count: 'exact' })
     .order('created_at', {
       ascending: false
     })
@@ -181,7 +188,11 @@ async function carregarAtendimentos() {
     `)
   }
 
-  const { data, error } = await query
+ const inicio = (paginaAtual - 1) * itensPorPagina
+const fim = inicio + itensPorPagina - 1
+
+const { data, error, count } = await query
+  .range(inicio, fim)
 
   if (error) {
 
