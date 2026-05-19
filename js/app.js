@@ -14,6 +14,24 @@ const container =
   document.getElementById('atendimentos-container')
 
 /* =========================
+   FILTROS
+========================= */
+
+const btnPendentes =
+  document.getElementById('btn-pendentes')
+
+const btnResolvidos =
+  document.getElementById('btn-resolvidos')
+
+const btnHistorico =
+  document.getElementById('btn-historico')
+
+const btnDados =
+  document.getElementById('btn-dados')
+
+let filtroAtual = 'todos'
+
+/* =========================
    MODAL
 ========================= */
 
@@ -83,12 +101,26 @@ function prioridadeClass(prioridade) {
 
 async function carregarAtendimentos() {
 
-  const { data, error } = await supabase
+  let query = supabase
     .from('atendimentos')
     .select('*')
     .order('created_at', {
       ascending: false
     })
+
+  if (filtroAtual === 'pendentes') {
+
+    query = query.eq('status', 'Pendente')
+
+  }
+
+  if (filtroAtual === 'resolvidos') {
+
+    query = query.eq('status', 'Resolvido')
+
+  }
+
+  const { data, error } = await query
 
   if (error) {
     console.error(error)
@@ -96,6 +128,25 @@ async function carregarAtendimentos() {
   }
 
   container.innerHTML = ''
+
+  if (data.length === 0) {
+
+    container.innerHTML = `
+      <div class="bg-white rounded-3xl p-10 text-center">
+        <h3 class="text-2xl font-bold mb-2">
+          Nenhum atendimento encontrado
+        </h3>
+
+        <p class="text-slate-500">
+          Não existem registros nesta categoria.
+        </p>
+      </div>
+    `
+
+    atualizarKPIs(data)
+
+    return
+  }
 
   data.forEach(atendimento => {
 
@@ -227,6 +278,30 @@ function adicionarEventosResolver() {
 
       alert('Atendimento resolvido.')
 
+       /* =========================
+   EVENTOS FILTROS
+========================= */
+
+btnPendentes.addEventListener('click', () => {
+
+  filtroAtual = 'pendentes'
+
+  carregarAtendimentos()
+})
+
+btnResolvidos.addEventListener('click', () => {
+
+  filtroAtual = 'resolvidos'
+
+  carregarAtendimentos()
+})
+
+btnHistorico.addEventListener('click', () => {
+
+  filtroAtual = 'todos'
+
+  carregarAtendimentos()
+})
       carregarAtendimentos()
     })
   })
