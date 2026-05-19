@@ -228,9 +228,7 @@ async function carregarAtendimentos() {
 
     card.className = 'atendimento-card'
 
-    card.innerHTML = `
-
-      card.innerHTML = `
+   card.innerHTML = `
 
   <div class="flex justify-between items-center">
 
