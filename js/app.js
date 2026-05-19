@@ -31,6 +31,11 @@ const btnDados =
 
 let filtroAtual = 'todos'
 
+let termoBusca = ''
+
+const buscaInput =
+  document.getElementById('busca-input')
+
 /* =========================
    MODAL DETALHES
 ========================= */
