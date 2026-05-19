@@ -306,3 +306,15 @@ h2 {
 .btn-delete:hover {
   opacity: 0.9;
 }
+   .btn-success {
+  background: #22c55e;
+  color: white;
+  padding: 10px 16px;
+  border-radius: 12px;
+  transition: 0.2s;
+  font-weight: 600;
+}
+
+.btn-success:hover {
+  background: #16a34a;
+}
