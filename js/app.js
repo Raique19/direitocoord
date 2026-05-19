@@ -546,6 +546,153 @@ function adicionarEventosExcluir() {
 }
 
 /* =========================
+   GRÁFICOS
+========================= */
+
+async function carregarGraficos() {
+
+  const { data, error } = await supabase
+    .from('atendimentos')
+    .select('*')
+
+  if (error) {
+    console.error(error)
+    return
+  }
+
+  /* CATEGORIAS */
+
+  const categorias = {}
+
+  data.forEach(item => {
+
+    const categoria =
+      item.tipo_problema?.[0] || 'Outro'
+
+    categorias[categoria] =
+      (categorias[categoria] || 0) + 1
+  })
+
+  /* CURSOS */
+
+  const cursos = {}
+
+  data.forEach(item => {
+
+    cursos[item.curso] =
+      (cursos[item.curso] || 0) + 1
+  })
+
+  /* STATUS */
+
+  const pendentes =
+    data.filter(
+      item => item.status === 'Pendente'
+    ).length
+
+  const resolvidos =
+    data.filter(
+      item => item.status === 'Resolvido'
+    ).length
+
+  /* RESPONSÁVEL */
+
+  const responsaveis = {}
+
+  data.forEach(item => {
+
+    responsaveis[item.responsavel] =
+      (responsaveis[item.responsavel] || 0) + 1
+  })
+
+  /* LIMPAR GRÁFICOS ANTIGOS */
+
+  document.getElementById('graficoCategorias').remove()
+
+  document.querySelector('#graficoCategorias-container')
+    ?.remove()
+
+  /* recriar canvases */
+
+  document.querySelectorAll('canvas').forEach(canvas => {
+    canvas.replaceWith(canvas.cloneNode())
+  })
+
+  /* GRÁFICO CATEGORIAS */
+
+  new Chart(
+    document.getElementById('graficoCategorias'),
+    {
+      type: 'bar',
+
+      data: {
+
+        labels: Object.keys(categorias),
+
+        datasets: [{
+          label: 'Atendimentos',
+          data: Object.values(categorias)
+        }]
+      }
+    }
+  )
+
+  /* CURSOS */
+
+  new Chart(
+    document.getElementById('graficoCursos'),
+    {
+      type: 'pie',
+
+      data: {
+
+        labels: Object.keys(cursos),
+
+        datasets: [{
+          data: Object.values(cursos)
+        }]
+      }
+    }
+  )
+
+  /* STATUS */
+
+  new Chart(
+    document.getElementById('graficoStatus'),
+    {
+      type: 'doughnut',
+
+      data: {
+
+        labels: ['Pendentes', 'Resolvidos'],
+
+        datasets: [{
+          data: [pendentes, resolvidos]
+        }]
+      }
+    }
+  )
+
+  /* RESPONSÁVEIS */
+
+  new Chart(
+    document.getElementById('graficoResponsavel'),
+    {
+      type: 'polarArea',
+
+      data: {
+
+        labels: Object.keys(responsaveis),
+
+        datasets: [{
+          data: Object.values(responsaveis)
+        }]
+      }
+    }
+  )
+}
+
+/* =========================
    KPIs
 ========================= */
 
@@ -653,7 +800,26 @@ btnHistorico.addEventListener('click', () => {
 
   filtroAtual = 'todos'
 
+  dadosGerais.classList.add('hidden')
+
+  container.parentElement.classList.remove('hidden')
+
   carregarAtendimentos()
+})
+
+btnDados.addEventListener('click', async () => {
+
+  /* esconder lista */
+
+  container.parentElement.classList.add('hidden')
+
+  /* mostrar dashboard */
+
+  dadosGerais.classList.remove('hidden')
+
+  /* carregar gráficos */
+
+  await carregarGraficos()
 })
 
 /* =========================
