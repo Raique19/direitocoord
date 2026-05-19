@@ -230,50 +230,37 @@ async function carregarAtendimentos() {
 
     card.innerHTML = `
 
-      <div class="flex justify-between items-start">
+      card.innerHTML = `
 
-        <div>
+  <div class="flex justify-between items-center">
 
-          <h3>
-            ${atendimento.nome_aluno}
-          </h3>
+    <div>
 
-          <p>
-            ${atendimento.curso}
-            •
-            ${atendimento.tipo_problema}
-          </p>
+      <h3 class="mb-1">
+        ${atendimento.nome_aluno}
+      </h3>
 
-          <p>
-            Responsável:
-            <strong>
-              ${atendimento.responsavel}
-            </strong>
-          </p>
+      <p class="text-sm">
+        ${atendimento.curso}
+        •
+        ${atendimento.tipo_problema}
+      </p>
 
-          <p class="${prioridadeCSS}">
-            Prioridade:
-            ${atendimento.prioridade}
-          </p>
+      <p class="text-sm text-slate-400 mt-1">
+        ${atendimento.responsavel}
+        •
+        ${formatarData(atendimento.created_at)}
+      </p>
 
-          <p>
-            CPF:
-            ${mascararCPF(atendimento.cpf)}
-          </p>
+    </div>
 
-          <p>
-            ${formatarData(atendimento.created_at)}
-          </p>
+    <div class="flex flex-col items-end gap-4">
 
-        </div>
+      <span class="${statusClass}">
+        ${atendimento.status}
+      </span>
 
-        <span class="${statusClass}">
-          ${atendimento.status}
-        </span>
-
-      </div>
-
-      <div class="flex gap-3 mt-6">
+      <div class="flex gap-2">
 
         <button
           class="btn-primary detalhes-btn"
@@ -296,7 +283,11 @@ async function carregarAtendimentos() {
         }
 
       </div>
-    `
+
+    </div>
+
+  </div>
+`
 
     container.appendChild(card)
   })
