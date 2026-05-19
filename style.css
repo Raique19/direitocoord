@@ -1,0 +1,38 @@
+body {
+  font-family: Inter, sans-serif;
+}
+
+.menu-btn {
+  width: 100%;
+  text-align: left;
+  padding: 12px;
+  border-radius: 12px;
+  transition: 0.2s;
+}
+
+.menu-btn:hover {
+  background: rgba(255,255,255,0.1);
+}
+
+.kpi-card {
+  background: white;
+  padding: 24px;
+  border-radius: 20px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+
+.kpi-card h3 {
+  color: #64748b;
+}
+
+.kpi-card p {
+  font-size: 2rem;
+  font-weight: bold;
+}
+
+.input {
+  border: 1px solid #cbd5e1;
+  border-radius: 12px;
+  padding: 12px;
+  width: 100%;
+}
