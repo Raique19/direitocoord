@@ -421,9 +421,9 @@ function adicionarEventosDetalhes(data) {
             Descrição / Pendência
           </h3>
 
-          <div class="bg-slate-100 rounded-2xl p-5">
-            ${atendimento.descricao_pendencia || '-'}
-          </div>
+          <div class="bg-slate-100 rounded-2xl p-5 descricao-wrapper">
+  ${(atendimento.descricao_pendencia || '-').replace(/\n/g, '<br/>')}
+</div>
 
         </div>
 
