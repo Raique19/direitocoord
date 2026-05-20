@@ -178,6 +178,7 @@ padding: 10px 16px;
   background: white;
   border-radius: 20px;
   padding: 18px 20px;
+}
 
 .atendimento-card:hover {
   transform: translateY(-2px);
