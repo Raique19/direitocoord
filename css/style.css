@@ -340,5 +340,17 @@ h2 {
 /* Para melhorar a visualização no modal */
 .modal-content {
   max-height: 90vh;
+
+   /* TESTE - força quebra de linha */
+.descricao-wrapper {
+  word-wrap: break-word !important;
+  word-break: break-all !important;
+  white-space: normal !important;
+  max-height: 300px !important;
+  overflow-y: scroll !important;
+  background: #f1f5f9;
+  padding: 16px;
+  border-radius: 16px;
+}
   overflow-y: auto;
 }
