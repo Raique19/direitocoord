@@ -318,3 +318,26 @@ h2 {
 .btn-success:hover {
   background: #16a34a;
 }
+   
+/* =========================
+   TEXTO LONGO
+========================= */
+
+.descricao-wrapper {
+  word-wrap: break-word;
+  word-break: break-word;
+  white-space: normal;
+  max-height: 400px;
+  overflow-y: auto;
+  line-height: 1.6;
+}
+
+.descricao-wrapper p {
+  margin-bottom: 12px;
+}
+
+/* Para melhorar a visualização no modal */
+.modal-content {
+  max-height: 90vh;
+  overflow-y: auto;
+}
